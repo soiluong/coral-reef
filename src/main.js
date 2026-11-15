@@ -3,6 +3,16 @@ import { build, noiseTex } from './geo.js';
 (async () => {
   const Q = new URLSearchParams(location.search), dev = Q.has('dev'), perf = Q.has('perf');
   const hud = document.getElementById('h'), cv = document.getElementById('c');
+  // fullscreen: button (shown while the pointer is active), double-click, or F
+  {
+    const fb = document.getElementById('f'), de = document.documentElement, rq = de.requestFullscreen || de.webkitRequestFullscreen, ex = document.exitFullscreen || document.webkitExitFullscreen;
+    if (rq) {
+      const tog = () => { const p = document.fullscreenElement || document.webkitFullscreenElement ? ex.call(document) : rq.call(de); p && p.catch && p.catch(() => { }) };
+      let h; const wake = () => { document.body.className = 'a'; clearTimeout(h); h = setTimeout(() => document.body.className = '', 2500) };
+      fb.onclick = tog; addEventListener('dblclick', e => e.target != fb && tog()); addEventListener('keydown', e => (e.key == 'f' || e.key == 'F') && tog());
+      addEventListener('pointermove', wake); addEventListener('pointerdown', wake); wake();
+    } else fb.remove();
+  }
   const dbg = m => { if (dev) fetch('/log', { method: 'POST', body: String(m) }).catch(() => { }) };
   const fail = m => { hud.textContent = m; dbg(m) };
   if (dev) { addEventListener('error', e => dbg('ERR ' + e.message + ' @' + e.lineno)); addEventListener('unhandledrejection', e => dbg('REJ ' + (e.reason && (e.reason.stack || e.reason.message) || e.reason))) }
